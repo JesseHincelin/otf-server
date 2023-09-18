@@ -32,13 +32,13 @@ const getUser = async (userId) => {
   }
 };
 
-const readByUserName = async (userName) => {
+const readByUserName = async (name) => {
   let user = null;
   let error = null;
 
   try {
-    user = await User.findOne({ userName });
-    if (!user) throw new Error(`User ${userName} not found`);
+    user = await User.findOne({ userName: name });
+    if (!user) throw new Error(`User ${name} not found`);
   } catch (e) {
     error = `Cannot find user : ${e.message}`;
   } finally {
@@ -52,8 +52,6 @@ const changePass = async (userId, password, newPassword) => {
 
   try {
     user = await User.findById(userId);
-    if (!user) throw new Error("user not found");
-    if (user.password !== password) throw new Error("Wrong old password");
     user.password = newPassword;
     user.firstConnection = false;
     await user.save();

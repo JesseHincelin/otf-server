@@ -8,6 +8,7 @@ const initAdminRoutes = (app, sm, jwt) => {
   router.patch("/change-password", jwt, sm, adminController.resetPassword);
   router.patch("/edit-user", jwt, sm, adminController.editUser);
   router.delete("/delete-account/:idToDelete", jwt, sm, adminController.deleteAccount);
+  router.get("/get-one-user/:userName", jwt, sm, adminController.getUserByName);
   router.get("/get-users", jwt, sm, adminController.getAllUsers);
 
   app.use("/admin", router);

@@ -12,7 +12,9 @@ const signUp = async (userName, password, domain, groupe, role) => {
   try {
     if (role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN)
       throw new Error("You don't have the rights to create a user with this role");
+    // const newUser =
     await User.create(newUser);
+    // await newUser.save();
   } catch (e) {
     error = `Cannot create user : ${e.message}`;
   } finally {
@@ -76,6 +78,11 @@ const deleteAccount = async (idToDelete) => {
   let error = null;
 
   try {
+    const user = await User.findById(idToDelete);
+    if (!user) throw new Error("This account does not exist");
+    if (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.SUPER_ADMIN)
+      // add condition for super admin to delete admin
+      throw new Error("You don't have the rights to delete this account");
     const { deletedCount } = await User.deleteOne({ _id: idToDelete });
     if (!deletedCount) throw new Error("Could not delete account");
     if (deletedCount > 1) throw new Error("More than one account have been deleted");

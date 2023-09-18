@@ -4,6 +4,7 @@ import { userController } from "../controllers/user.controller.js";
 const initUserRoutes = (app, sm, jwt) => {
   const router = Router();
   router.post("/login", sm, userController.login);
+  router.get("/auto-connect", jwt, sm, userController.autoConnect);
   router.patch("/change-password", jwt, sm, userController.changePassword);
   router.patch("/change-theme", jwt, sm, userController.changeTheme);
   router.post("/create-categorie", jwt, sm, userController.createCategorie);

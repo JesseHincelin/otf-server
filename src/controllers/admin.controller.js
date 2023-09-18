@@ -27,6 +27,7 @@ const createAccount = async (req, res) => {
     groupe,
     role
   );
+
   if (!!newError) return res.status(400).json({ message: newError });
 
   res.status(201).json({ message: "User successfully created", user: userInfos(newUser) });
@@ -80,6 +81,8 @@ const deleteAccount = async (req, res) => {
   const { userId } = req.body;
   const { idToDelete } = req.params;
 
+  console.log("id to delete in admin controller :", idToDelete);
+
   const { admin, adminError } = await adminDAO.controlAdmin(userId);
   if (!!adminError || !admin) return res.status(401).json({ message: adminError });
 
@@ -87,6 +90,19 @@ const deleteAccount = async (req, res) => {
   if (!!error || !deleteIsOkay) return res.status(400).json({ message: error });
 
   res.status(201).json({ message: "Account deleted successfully" });
+};
+
+const getUserByName = async (req, res) => {
+  const { userId } = req.body;
+  const { userName } = req.params;
+
+  const { admin, adminError } = await adminDAO.controlAdmin(userId);
+  if (!!adminError || !admin) return res.status(401).json({ message: adminError });
+
+  const { user, error } = await userDAO.readByUserName(userName);
+  if (!!error || !user) return res.status(400).json({ message: error });
+
+  res.status(200).json({ message: "User successfully found", user: userInfos(user) });
 };
 
 const getAllUsers = async (req, res) => {
@@ -118,6 +134,7 @@ export const adminController = {
   createAdmin,
   resetPassword,
   deleteAccount,
+  getUserByName,
   getAllUsers,
   editUser,
 };

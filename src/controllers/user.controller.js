@@ -1,11 +1,11 @@
 import { userDAO } from "../DAOS/user.dao.js";
-import { compareHash } from "../utils/hash.utils.js";
+import { compareHash, hashed } from "../utils/hash.utils.js";
 import { jwtSign } from "../utils/jwt.utils.js";
 import { passwordIsValid } from "../utils/regex.utils.js";
 import { userInfos } from "../utils/user.utils.js";
 
 const login = async (req, res) => {
-  const { password, userName } = req.body;
+  const { password, userName, domain } = req.body;
   const messageError = `Fail to login. User name or password incorrect.`;
 
   const { error, user } = await userDAO.readByUserName(userName);
@@ -22,12 +22,29 @@ const login = async (req, res) => {
   res.json({ message: `Login succesfully !`, user: userInfos(userPopulated), token });
 };
 
+const autoConnect = async (req, res) => {
+  const { userId } = req.body;
+
+  const { userError, userPopulated } = await userDAO.getUser(userId);
+  if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
+
+  return res
+    .status(200)
+    .json({ message: "Reconnection successful", user: userInfos(userPopulated) });
+};
+
 const changePassword = async (req, res) => {
   const { userId, password, newPassword } = req.body;
 
   const passwordIsOkay = passwordIsValid(newPassword);
   if (!passwordIsOkay)
     return res.status(400).json({ message: "New password is not strong enough" });
+
+  const controle = await userDAO.findUserById(userId);
+  if (!!controle.error) return res.status(400).json({ message: controle.error });
+
+  const { match, err } = await compareHash(password, controle.user.password);
+  if (!match || !!err) return res.status(400).json({ message: err });
 
   const newPass = await hashed(newPassword);
   if (!newPass.hashedPassword || !!newPass.err)
@@ -37,11 +54,7 @@ const changePassword = async (req, res) => {
   if (!oldPass.hashedPassword || !!oldPass.err)
     return res.status(400).json({ message: oldPass.err });
 
-  const { user, error } = await userDAO.changePass(
-    userId,
-    oldPass.hashedPassword,
-    newPass.hashedPassword
-  );
+  const { user, error } = await userDAO.changePass(userId, newPass.hashedPassword);
   if (!user || !!error) return res.status(400).json({ message: error });
 
   const { userPopulated, userError } = await userDAO.getUser(user.id);
@@ -107,6 +120,7 @@ const deleteCategorie = async (req, res) => {
 
 export const userController = {
   login,
+  autoConnect,
   changePassword,
   changeTheme,
   createCategorie,
