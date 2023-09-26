@@ -1,3 +1,4 @@
+import Groupe from "../models/groupe.model.js";
 import User, { USER_ROLE } from "../models/user.model.js";
 
 const signUp = async (userName, password, domain, groupe, role) => {
@@ -100,7 +101,6 @@ const seeAllUsers = async () => {
 
   try {
     const list = await User.find({});
-    console.log("list of users :", list);
     for (let i = 0; i < list.length; i++) {
       const user = list[i];
       if (user.role !== USER_ROLE.SUPER_ADMIN) {
@@ -137,6 +137,69 @@ const editUser = async (userName, domain, groupe, role) => {
   }
 };
 
+const createGroupe = async (title) => {
+  let error = null;
+  const groupe = {
+    title: title,
+  };
+
+  try {
+    await Groupe.create(groupe);
+  } catch (e) {
+    error = `Cannot create groupe : ${e.message}`;
+  } finally {
+    return { error, groupe };
+  }
+};
+
+const editGroupe = async (groupeId, newTitle) => {
+  let error = null;
+  let groupe = null;
+
+  try {
+    groupe = await Groupe.findById(groupeId);
+    if (!groupe) throw new Error("Groupe does not exist");
+    groupe.title = newTitle;
+    await save(groupe);
+  } catch (e) {
+    error = `Cannot edit groupe : ${e.message}`;
+  } finally {
+    return { error, groupe };
+  }
+};
+
+const deleteGroupe = async (groupeId) => {
+  let error = null;
+  let deleteIsOkay = false;
+
+  try {
+    const { deletedCount } = await Groupe.deleteOne({ _id: groupeId });
+    if (!deletedCount) throw new Error("Could not delete groupe");
+    if (deletedCount > 1) throw new Error("More than one groupe have been deleted");
+    deleteIsOkay = true;
+  } catch (e) {
+    error = `Cannot delete groupe : ${e.message}`;
+  } finally {
+    return { error, deleteIsOkay };
+  }
+};
+
+const getAllGroupes = async () => {
+  let error = null;
+  const groupes = [];
+
+  try {
+    const list = await Groupe.find({});
+    for (i = 0; i < list.length; i++) {
+      groupes.push(list[i]);
+    }
+  } catch (e) {
+    error = `Cannot create groupe : ${e.message}`;
+  } finally {
+    return { error, groupes };
+  }
+};
+
 export const adminDAO = {
   signUp,
   newAdmin,
@@ -145,4 +208,8 @@ export const adminDAO = {
   deleteAccount,
   seeAllUsers,
   editUser,
+  createGroupe,
+  editGroupe,
+  deleteGroupe,
+  getAllGroupes,
 };

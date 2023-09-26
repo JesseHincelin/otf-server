@@ -10,6 +10,10 @@ const initAdminRoutes = (app, sm, jwt) => {
   router.delete("/delete-account/:idToDelete", jwt, sm, adminController.deleteAccount);
   router.get("/get-one-user/:userName", jwt, sm, adminController.getUserByName);
   router.get("/get-users", jwt, sm, adminController.getAllUsers);
+  router.post("/create-groupe", jwt, sm, adminController.createGroupe);
+  router.patch("/edit-groupe", jwt, sm, adminController.editGroupe);
+  router.delete("/delete-groupe/:groupeId", jwt, sm, adminController.deleteGroupe);
+  router.get("/get-groupes", jwt, sm, adminController.getAllGroupes);
 
   app.use("/admin", router);
 };

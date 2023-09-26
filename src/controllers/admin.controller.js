@@ -89,7 +89,7 @@ const deleteAccount = async (req, res) => {
   const { deleteIsOkay, error } = await adminDAO.deleteAccount(idToDelete);
   if (!!error || !deleteIsOkay) return res.status(400).json({ message: error });
 
-  res.status(201).json({ message: "Account deleted successfully" });
+  res.status(201).json({ message: "Account deleted successfully", delete: true });
 };
 
 const getUserByName = async (req, res) => {
@@ -129,6 +129,55 @@ const editUser = async (req, res) => {
   res.status(202).json({ message: "User edited successfully", user: userInfos(user) });
 };
 
+const createGroupe = async (req, res) => {
+  const { userId, title } = req.body;
+
+  const { admin, adminError } = await adminDAO.controlAdmin(userId);
+  if (!!adminError || !admin) return res.status(401).json({ message: adminError });
+
+  const { groupe, error } = await adminDAO.createGroupe(title);
+  if (!groupe || !!error) return res.status(400).json({ message: error });
+
+  res.status(201).json({ message: "Groupe created successfully", groupe });
+};
+
+const editGroupe = async (req, res) => {
+  const { userId, groupeId, newTitle } = req.body;
+
+  const { admin, adminError } = await adminDAO.controlAdmin(userId);
+  if (!!adminError || !admin) return res.status(401).json({ message: adminError });
+
+  const { groupe, error } = await adminDAO.editGroupe(groupeId, newTitle);
+  if (!groupe || !!error) return res.status(400).json({ message: error });
+
+  res.status(202).json({ message: "Groupe edited successfully", groupe });
+};
+
+const deleteGroupe = async (req, res) => {
+  const { userId } = req.body;
+  const { groupeId } = req.params;
+
+  const { admin, adminError } = await adminDAO.controlAdmin(userId);
+  if (!!adminError || !admin) return res.status(401).json({ message: adminError });
+
+  const { deleteIsOkay, error } = await adminDAO.deleteGroupe(groupeId);
+  if (!deleteIsOkay || !!error) return res.status(400).json({ message: error });
+
+  res.status(201).json({ message: "Groupe deleted successfully", delete: true });
+};
+
+const getAllGroupes = async (req, res) => {
+  const { userId } = req.body;
+
+  const { admin, adminError } = await adminDAO.controlAdmin(userId);
+  if (!!adminError || !admin) return res.status(401).json({ message: adminError });
+
+  const { groupes, error } = await adminDAO.getAllGroupes();
+  if (groupes.length < 1 || !!error) return res.status(400).json({ message: error });
+
+  res.status(201).json({ message: "All the groupes", groupes: groupes });
+};
+
 export const adminController = {
   createAccount,
   createAdmin,
@@ -137,4 +186,8 @@ export const adminController = {
   getUserByName,
   getAllUsers,
   editUser,
+  createGroupe,
+  editGroupe,
+  deleteGroupe,
+  getAllGroupes,
 };
