@@ -32,7 +32,7 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Domain required"],
   },
-  groupe: String,
+  groupe: { type: ObjectId, ref: "Groupe" },
   theme: {
     type: String,
     default: USER_THEME.LIGHT,

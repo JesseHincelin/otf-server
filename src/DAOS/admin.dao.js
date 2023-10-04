@@ -14,6 +14,9 @@ const signUp = async (userName, password, domain, groupe, role) => {
     if (role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN)
       throw new Error("You don't have the rights to create a user with this role");
     // const newUser =
+    const userGroupe = await Groupe.findById(groupe);
+    if (!userGroupe) throw new Error("This groupe does not exist");
+    newUser.groupe = userGroupe;
     await User.create(newUser);
     // await newUser.save();
   } catch (e) {
@@ -126,8 +129,10 @@ const editUser = async (userName, domain, groupe, role) => {
 
   try {
     user = await User.findOne({ userName: userName });
+    if (user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN)
+      throw new Error("You don't have the right to edit an admin account");
     user.domain = domain;
-    user.groupe = groupe;
+    user.groupe = await Groupe.findById(groupe);
     user.role = role;
     await user.save();
   } catch (e) {
@@ -144,6 +149,8 @@ const createGroupe = async (title) => {
   };
 
   try {
+    const alreadyExist = await Groupe.findOne({ title: title });
+    if (!!alreadyExist) throw new Error("This groupe already exist");
     await Groupe.create(groupe);
   } catch (e) {
     error = `Cannot create groupe : ${e.message}`;
@@ -157,10 +164,14 @@ const editGroupe = async (groupeId, newTitle) => {
   let groupe = null;
 
   try {
+    const alreadyExist = await Groupe.findOne({ title: newTitle });
+    console.log("Check if groupe title exist for edit :", alreadyExist);
+    if (!!alreadyExist) throw new Error("This groupe already exist");
     groupe = await Groupe.findById(groupeId);
+    console.log("check if groupe is found :", groupe);
     if (!groupe) throw new Error("Groupe does not exist");
     groupe.title = newTitle;
-    await save(groupe);
+    await groupe.save();
   } catch (e) {
     error = `Cannot edit groupe : ${e.message}`;
   } finally {
@@ -185,18 +196,18 @@ const deleteGroupe = async (groupeId) => {
 };
 
 const getAllGroupes = async () => {
-  let error = null;
+  let groupeError = null;
   const groupes = [];
 
   try {
     const list = await Groupe.find({});
-    for (i = 0; i < list.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       groupes.push(list[i]);
     }
   } catch (e) {
-    error = `Cannot create groupe : ${e.message}`;
+    groupeError = `Cannot create groupe : ${e.message}`;
   } finally {
-    return { error, groupes };
+    return { groupeError, groupes };
   }
 };
 

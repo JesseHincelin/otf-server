@@ -1,4 +1,6 @@
+import { adminDAO } from "../DAOS/admin.dao.js";
 import { userDAO } from "../DAOS/user.dao.js";
+import { USER_ROLE } from "../models/user.model.js";
 import { compareHash, hashed } from "../utils/hash.utils.js";
 import { jwtSign } from "../utils/jwt.utils.js";
 import { passwordIsValid } from "../utils/regex.utils.js";
@@ -16,10 +18,24 @@ const login = async (req, res) => {
 
   const token = jwtSign(user.id);
 
+  let groupes = null;
+  let groupeError = null;
+  if (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.SUPER_ADMIN) {
+    const result = await adminDAO.getAllGroupes();
+    groupes = result.groupes;
+    groupeError = result.groupeError;
+    if (groupes.length < 1 || !!groupeError) return res.status(400).json({ message: groupeError });
+  }
+
   const { userPopulated, userError } = await userDAO.getUser(user.id);
   if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
 
-  res.json({ message: `Login succesfully !`, user: userInfos(userPopulated), token });
+  res.status(200).json({
+    message: `Login succesfully !`,
+    user: userInfos(userPopulated),
+    token,
+    groupes: groupes,
+  });
 };
 
 const autoConnect = async (req, res) => {
@@ -28,9 +44,18 @@ const autoConnect = async (req, res) => {
   const { userError, userPopulated } = await userDAO.getUser(userId);
   if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
 
+  let groupes = null;
+  let groupeError = null;
+  if (userPopulated.role === USER_ROLE.ADMIN || userPopulated.role === USER_ROLE.SUPER_ADMIN) {
+    const result = await adminDAO.getAllGroupes();
+    groupes = result.groupes;
+    groupeError = result.groupeError;
+    if (groupes.length < 1 || !!groupeError) return res.status(400).json({ message: groupeError });
+  }
+
   return res
     .status(200)
-    .json({ message: "Reconnection successful", user: userInfos(userPopulated) });
+    .json({ message: "Reconnection successful", user: userInfos(userPopulated), groupes: groupes });
 };
 
 const changePassword = async (req, res) => {
