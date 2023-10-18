@@ -1,7 +1,7 @@
 import Groupe from "../models/groupe.model.js";
 import User, { USER_ROLE } from "../models/user.model.js";
 
-const signUp = async (userName, password, domain, groupe, role) => {
+const signUp = async (adminRole, userName, password, domain, groupe, role) => {
   let newError = null;
   const newUser = {
     userName,
@@ -11,7 +11,10 @@ const signUp = async (userName, password, domain, groupe, role) => {
     role,
   };
   try {
-    if (role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN)
+    if (
+      adminRole !== USER_ROLE.SUPER_ADMIN &&
+      (role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN)
+    )
       throw new Error("You don't have the rights to create a user with this role");
     // const newUser =
     const userGroupe = await Groupe.findById(groupe);
@@ -20,7 +23,7 @@ const signUp = async (userName, password, domain, groupe, role) => {
     await User.create(newUser);
     // await newUser.save();
   } catch (e) {
-    error = `Cannot create user : ${e.message}`;
+    newError = `Cannot create user : ${e.message}`;
   } finally {
     return { newError, newUser };
   }
@@ -77,14 +80,17 @@ const resetPass = async (userName, password) => {
   }
 };
 
-const deleteAccount = async (idToDelete) => {
+const deleteAccount = async (idToDelete, adminRole) => {
   let deleteIsOkay = false;
   let error = null;
 
   try {
     const user = await User.findById(idToDelete);
     if (!user) throw new Error("This account does not exist");
-    if (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.SUPER_ADMIN)
+    if (
+      adminRole !== USER_ROLE.SUPER_ADMIN &&
+      (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.SUPER_ADMIN)
+    )
       // add condition for super admin to delete admin
       throw new Error("You don't have the rights to delete this account");
     const { deletedCount } = await User.deleteOne({ _id: idToDelete });

@@ -3,7 +3,7 @@ import Todo from "../models/todo.model.js";
 import User, { USER_ROLE } from "../models/user.model.js";
 import unescape from "validator/lib/unescape.js";
 
-// will need to add preset steps later on
+// will need to add pre-set steps later on
 const createTodo = async (title, userCreator, assignedTo, categorie, dueOn, priority, detail) => {
   let newError = null;
   const newTodo = {
@@ -21,7 +21,8 @@ const createTodo = async (title, userCreator, assignedTo, categorie, dueOn, prio
   try {
     const todo = await Todo.create(newTodo);
     const users = await User.find({ _id: assignedTo });
-    for (let user of users) {
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
       user.todosAssigned.push(todo._id);
       await user.save();
     }

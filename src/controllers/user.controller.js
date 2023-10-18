@@ -30,11 +30,15 @@ const login = async (req, res) => {
   const { userPopulated, userError } = await userDAO.getUser(user.id);
   if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
 
+  const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
+  if (!!categoriesError || !categories) return res.status(400).json({ message: categoriesError });
+
   res.status(200).json({
     message: `Login succesfully !`,
     user: userInfos(userPopulated),
     token,
-    groupes: groupes,
+    groupes,
+    categories,
   });
 };
 
@@ -53,9 +57,15 @@ const autoConnect = async (req, res) => {
     if (groupes.length < 1 || !!groupeError) return res.status(400).json({ message: groupeError });
   }
 
-  return res
-    .status(200)
-    .json({ message: "Reconnection successful", user: userInfos(userPopulated), groupes: groupes });
+  const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
+  if (!!categoriesError || !categories) return res.status(400).json({ message: categoriesError });
+
+  return res.status(200).json({
+    message: "Reconnection successful",
+    user: userInfos(userPopulated),
+    groupes,
+    categories,
+  });
 };
 
 const changePassword = async (req, res) => {
@@ -106,12 +116,19 @@ const createCategorie = async (req, res) => {
   const { error, categorie } = await userDAO.newCategorie(userId, name, color);
   if (!!error || !categorie) return res.status(400).json({ message: error });
 
-  const { userPopulated, userError } = await userDAO.getUser(user.id);
+  const { userPopulated, userError } = await userDAO.getUser(userId);
   if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
+
+  const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
+  if (!!categoriesError || !categories) return res.status(400).json({ message: categoriesError });
 
   return res
     .status(200)
-    .json({ message: "Categorie successfully created", user: userInfos(userPopulated) });
+    .json({
+      message: "Categorie successfully created",
+      user: userInfos(userPopulated),
+      categories,
+    });
 };
 
 const editCategorie = async (req, res) => {
@@ -123,9 +140,12 @@ const editCategorie = async (req, res) => {
   const { userPopulated, userError } = await userDAO.getUser(user.id);
   if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
 
+  const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
+  if (!!categoriesError || !categories) return res.status(400).json({ message: categoriesError });
+
   return res
     .status(200)
-    .json({ message: "Categorie successfully edited", user: userInfos(userPopulated) });
+    .json({ message: "Categorie successfully edited", user: userInfos(userPopulated), categories });
 };
 
 const deleteCategorie = async (req, res) => {
@@ -138,9 +158,16 @@ const deleteCategorie = async (req, res) => {
   const { userPopulated, userError } = await userDAO.getUser(user.id);
   if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
 
+  const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
+  if (!!categoriesError || !categories) return res.status(400).json({ message: categoriesError });
+
   return res
     .status(200)
-    .json({ message: "Categorie successfully deleted", user: userInfos(userPopulated) });
+    .json({
+      message: "Categorie successfully deleted",
+      user: userInfos(userPopulated),
+      categories,
+    });
 };
 
 export const userController = {

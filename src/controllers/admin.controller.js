@@ -1,7 +1,6 @@
 import { adminDAO } from "../DAOS/admin.dao.js";
 import { userDAO } from "../DAOS/user.dao.js";
 import { hashed } from "../utils/hash.utils.js";
-import { jwtSign } from "../utils/jwt.utils.js";
 import { passwordIsValid } from "../utils/regex.utils.js";
 import { userInfos } from "../utils/user.utils.js";
 
@@ -21,6 +20,7 @@ const createAccount = async (req, res) => {
   if (!hashedPassword || !!err) return res.status(400).json({ message: err });
 
   const { newError, newUser } = await adminDAO.signUp(
+    admin.role,
     userName,
     hashedPassword,
     domain,
@@ -86,7 +86,7 @@ const deleteAccount = async (req, res) => {
   const { admin, adminError } = await adminDAO.controlAdmin(userId);
   if (!!adminError || !admin) return res.status(401).json({ message: adminError });
 
-  const { deleteIsOkay, error } = await adminDAO.deleteAccount(idToDelete);
+  const { deleteIsOkay, error } = await adminDAO.deleteAccount(idToDelete, admin.role);
   if (!!error || !deleteIsOkay) return res.status(400).json({ message: error });
 
   res.status(201).json({ message: "Account deleted successfully", delete: true });

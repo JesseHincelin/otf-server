@@ -46,7 +46,7 @@ const readByUserName = async (name) => {
   }
 };
 
-const changePass = async (userId, password, newPassword) => {
+const changePass = async (userId, newPassword) => {
   let user = null;
   let error = null;
 
@@ -132,6 +132,30 @@ const deleteCategorie = async (userId, categorieId) => {
   }
 };
 
+const getCategories = async (userPopulated) => {
+  const categories = [];
+  let categoriesError = null;
+
+  try {
+    for (let i = 0; i < userPopulated.todosAssigned.length; i++) {
+      const categorie = userPopulated.todosAssigned[i].categorie;
+      if (!categories.includes(categorie)) {
+        categories.push(categorie);
+      }
+    }
+    const savedCategories = await Categorie.find({ createdBy: userPopulated.id });
+    for (let j = 0; j < savedCategories.length; j++) {
+      if (!categories.includes(savedCategories[j])) {
+        categories.push(savedCategories[j]);
+      }
+    }
+  } catch (e) {
+    categoriesError = `Cannot get the categories : ${e.message}`;
+  } finally {
+    return { categories, categoriesError };
+  }
+};
+
 export const userDAO = {
   findUserById,
   getUser,
@@ -141,4 +165,5 @@ export const userDAO = {
   newCategorie,
   editCategorie,
   deleteCategorie,
+  getCategories,
 };
