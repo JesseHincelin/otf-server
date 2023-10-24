@@ -5,4 +5,4 @@ const month = date.getMonth() + 1;
 const year = date.getFullYear();
 
 export const currentDate = () =>
-  `${day < 10 ? "0" + day : day}/${month < 10 ? "0" + month : month}/${year}`;
+  `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`;

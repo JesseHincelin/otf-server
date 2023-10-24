@@ -22,9 +22,12 @@ const newTodo = async (req, res) => {
   );
   if (!!newError || !newTodo) return res.status(400).json({ message: newError });
 
+  const { userError, userPopulated } = await userDAO.getUser(userId);
+  if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
+
   return res
     .status(201)
-    .json({ message: "New todo created and assigned", user: userInfos(user), newTodo });
+    .json({ message: "New todo created and assigned", user: userInfos(userPopulated), newTodo });
 };
 
 const deleteTodo = async (req, res) => {

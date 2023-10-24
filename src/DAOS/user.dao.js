@@ -1,6 +1,7 @@
 import Categorie from "../models/categorie.model.js";
 import Todo from "../models/todo.model.js";
 import User from "../models/user.model.js";
+import { userInfos } from "../utils/user.utils.js";
 
 const findUserById = async (userId) => {
   let user = null;
@@ -149,10 +150,31 @@ const getCategories = async (userPopulated) => {
         categories.push(savedCategories[j]);
       }
     }
+    if (categories.length < 1) {
+      const defaultCategorie = await Categorie.findById("65338a856d2300c7d4e33fba");
+      categories.push(defaultCategorie);
+    }
   } catch (e) {
     categoriesError = `Cannot get the categories : ${e.message}`;
   } finally {
     return { categories, categoriesError };
+  }
+};
+
+const getGroup = async (groupeId) => {
+  const groupe = [];
+  let groupeErr = null;
+
+  try {
+    const users = await User.find({ groupe: groupeId });
+    for (let i = 0; i < users.length; i++) {
+      const user = userInfos(users[i]);
+      groupe.push(user);
+    }
+  } catch (e) {
+    groupeErr = `Cannot get the group information : ${e.message}`;
+  } finally {
+    return { groupe, groupeErr };
   }
 };
 
@@ -166,4 +188,5 @@ export const userDAO = {
   editCategorie,
   deleteCategorie,
   getCategories,
+  getGroup,
 };

@@ -3,9 +3,9 @@ import { currentDate } from "../utils/date.utils.js";
 import { dateIsValid } from "../utils/regex.utils.js";
 
 const TODO_PRIORITY = {
-  HIGH: "high",
-  MEDIUM: "medium",
-  LOW: "low",
+  HIGH: "High",
+  MEDIUM: "Medium",
+  LOW: "Low",
 };
 const TODO_COMPLETED = {
   COMPLETED: true,

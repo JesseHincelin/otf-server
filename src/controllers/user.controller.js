@@ -19,12 +19,22 @@ const login = async (req, res) => {
   const token = jwtSign(user.id);
 
   let groupes = null;
-  let groupeError = null;
+  let groupesError = null;
   if (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.SUPER_ADMIN) {
     const result = await adminDAO.getAllGroupes();
     groupes = result.groupes;
-    groupeError = result.groupeError;
-    if (groupes.length < 1 || !!groupeError) return res.status(400).json({ message: groupeError });
+    groupesError = result.groupesError;
+    if (!!groupesError) return res.status(400).json({ message: groupesError });
+  }
+
+  let groupeMembers = null;
+  let groupeErr = null;
+  if (user.role === USER_ROLE.SUPERVISOR) {
+    const resultGroup = await userDAO.getGroup(user.groupe);
+    groupeMembers = resultGroup.groupe;
+    groupeErr = resultGroup.groupeErr;
+    if (groupeMembers.length < 1 || !!groupeErr)
+      return res.status(400).json({ message: groupeErr });
   }
 
   const { userPopulated, userError } = await userDAO.getUser(user.id);
@@ -38,6 +48,7 @@ const login = async (req, res) => {
     user: userInfos(userPopulated),
     token,
     groupes,
+    groupeMembers,
     categories,
   });
 };
@@ -49,12 +60,23 @@ const autoConnect = async (req, res) => {
   if (!!userError || !userPopulated) return res.status(400).json({ message: userError });
 
   let groupes = null;
-  let groupeError = null;
+  let groupesError = null;
   if (userPopulated.role === USER_ROLE.ADMIN || userPopulated.role === USER_ROLE.SUPER_ADMIN) {
     const result = await adminDAO.getAllGroupes();
     groupes = result.groupes;
-    groupeError = result.groupeError;
-    if (groupes.length < 1 || !!groupeError) return res.status(400).json({ message: groupeError });
+    groupesError = result.groupesError;
+    if (groupes.length < 1 || !!groupesError)
+      return res.status(400).json({ message: groupesError });
+  }
+
+  let groupeMembers = null;
+  let groupeErr = null;
+  if (userPopulated.role === USER_ROLE.SUPERVISOR) {
+    const resultGroup = await userDAO.getGroup(userPopulated.groupe);
+    groupeMembers = resultGroup.groupe;
+    groupeErr = resultGroup.groupeErr;
+    if (groupeMembers.length < 1 || !!groupeErr)
+      return res.status(400).json({ message: groupeErr });
   }
 
   const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
@@ -64,6 +86,7 @@ const autoConnect = async (req, res) => {
     message: "Reconnection successful",
     user: userInfos(userPopulated),
     groupes,
+    groupeMembers,
     categories,
   });
 };
@@ -85,9 +108,9 @@ const changePassword = async (req, res) => {
   if (!newPass.hashedPassword || !!newPass.err)
     return res.status(400).json({ message: newPass.err });
 
-  const oldPass = await hashed(password);
-  if (!oldPass.hashedPassword || !!oldPass.err)
-    return res.status(400).json({ message: oldPass.err });
+  // const oldPass = await hashed(password);
+  // if (!oldPass.hashedPassword || !!oldPass.err)
+  //   return res.status(400).json({ message: oldPass.err });
 
   const { user, error } = await userDAO.changePass(userId, newPass.hashedPassword);
   if (!user || !!error) return res.status(400).json({ message: error });
@@ -122,13 +145,11 @@ const createCategorie = async (req, res) => {
   const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
   if (!!categoriesError || !categories) return res.status(400).json({ message: categoriesError });
 
-  return res
-    .status(200)
-    .json({
-      message: "Categorie successfully created",
-      user: userInfos(userPopulated),
-      categories,
-    });
+  return res.status(200).json({
+    message: "Categorie successfully created",
+    // user: userInfos(userPopulated),
+    categories,
+  });
 };
 
 const editCategorie = async (req, res) => {
@@ -161,13 +182,11 @@ const deleteCategorie = async (req, res) => {
   const { categories, categoriesError } = await userDAO.getCategories(userPopulated);
   if (!!categoriesError || !categories) return res.status(400).json({ message: categoriesError });
 
-  return res
-    .status(200)
-    .json({
-      message: "Categorie successfully deleted",
-      user: userInfos(userPopulated),
-      categories,
-    });
+  return res.status(200).json({
+    message: "Categorie successfully deleted",
+    user: userInfos(userPopulated),
+    categories,
+  });
 };
 
 export const userController = {

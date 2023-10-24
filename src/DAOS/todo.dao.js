@@ -19,8 +19,12 @@ const createTodo = async (title, userCreator, assignedTo, categorie, dueOn, prio
   };
 
   try {
+    if (assignedTo.length < 1) {
+      newTodo.assignedTo = [userCreator];
+    }
     const todo = await Todo.create(newTodo);
-    const users = await User.find({ _id: assignedTo });
+    const users = await User.find({ _id: todo.assignedTo });
+    console.log("test assignation new todo from todo DAO :", users);
     for (let i = 0; i < users.length; i++) {
       const user = users[i];
       user.todosAssigned.push(todo._id);
@@ -44,11 +48,14 @@ const deleteTodo = async (userId, todoId) => {
     if (userId !== todo.created.by.toString() && user?.role !== USER_ROLE.SUPERVISOR) {
       throw new Error("You don't have the right to delete a to-do you didn't initiated");
     }
-    const users = await User.find({ _id: todo.assignedTo });
-    for (let user of users) {
-      user.todosAssigned.pull(todoId);
-      await user.save();
+    const users = await User.find({ todosAssigned: todoId });
+    for (let i = 0; i < users.length; i++) {
+      const userToUpdate = users[i];
+      userToUpdate.todosAssigned.pull(todoId);
+      await userToUpdate.save();
     }
+    await user.save();
+    console.log("test delete todo :", user);
     result = await Todo.deleteOne({ _id: todoId });
     console.log("test delete todo DAO", result);
   } catch (e) {

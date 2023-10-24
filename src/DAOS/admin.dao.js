@@ -202,7 +202,7 @@ const deleteGroupe = async (groupeId) => {
 };
 
 const getAllGroupes = async () => {
-  let groupeError = null;
+  let groupesError = null;
   const groupes = [];
 
   try {
@@ -211,9 +211,9 @@ const getAllGroupes = async () => {
       groupes.push(list[i]);
     }
   } catch (e) {
-    groupeError = `Cannot create groupe : ${e.message}`;
+    groupesError = `Cannot create groupe : ${e.message}`;
   } finally {
-    return { groupeError, groupes };
+    return { groupesError, groupes };
   }
 };
 
