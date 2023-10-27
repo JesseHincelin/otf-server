@@ -16,12 +16,10 @@ const signUp = async (adminRole, userName, password, domain, groupe, role) => {
       (role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN)
     )
       throw new Error("You don't have the rights to create a user with this role");
-    // const newUser =
     const userGroupe = await Groupe.findById(groupe);
     if (!userGroupe) throw new Error("This groupe does not exist");
     newUser.groupe = userGroupe;
     await User.create(newUser);
-    // await newUser.save();
   } catch (e) {
     newError = `Cannot create user : ${e.message}`;
   } finally {
@@ -171,10 +169,8 @@ const editGroupe = async (groupeId, newTitle) => {
 
   try {
     const alreadyExist = await Groupe.findOne({ title: newTitle });
-    console.log("Check if groupe title exist for edit :", alreadyExist);
     if (!!alreadyExist) throw new Error("This groupe already exist");
     groupe = await Groupe.findById(groupeId);
-    console.log("check if groupe is found :", groupe);
     if (!groupe) throw new Error("Groupe does not exist");
     groupe.title = newTitle;
     await groupe.save();

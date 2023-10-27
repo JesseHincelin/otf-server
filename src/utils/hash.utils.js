@@ -8,7 +8,6 @@ export const hashed = async (password) => {
 
   try {
     hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    console.log("password in hash :", password);
   } catch (e) {
     error = `Error when hash ${e.message}`;
   } finally {

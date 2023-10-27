@@ -1,4 +1,3 @@
-import { ObjectId } from "../config/mongoose.config.js";
 import Todo from "../models/todo.model.js";
 import User, { USER_ROLE } from "../models/user.model.js";
 import unescape from "validator/lib/unescape.js";
@@ -24,7 +23,6 @@ const createTodo = async (title, userCreator, assignedTo, categorie, dueOn, prio
     }
     const todo = await Todo.create(newTodo);
     const users = await User.find({ _id: todo.assignedTo });
-    console.log("test assignation new todo from todo DAO :", users);
     for (let i = 0; i < users.length; i++) {
       const user = users[i];
       user.todosAssigned.push(todo._id);
@@ -55,9 +53,7 @@ const deleteTodo = async (userId, todoId) => {
       await userToUpdate.save();
     }
     await user.save();
-    console.log("test delete todo :", user);
     result = await Todo.deleteOne({ _id: todoId });
-    console.log("test delete todo DAO", result);
   } catch (e) {
     error = `Cannot delete to-do : ${e.message}`;
   } finally {

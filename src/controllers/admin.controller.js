@@ -48,8 +48,6 @@ const createAdmin = async (req, res) => {
   const { hashedPassword, err } = await hashed(password);
   if (!hashedPassword || !!err) return res.status(400).json({ message: err });
 
-  console.log("hashed password in controller :", hashedPassword);
-
   const { newAdmin, newError } = await adminDAO.newAdmin(
     userName,
     hashedPassword,
@@ -80,8 +78,6 @@ const resetPassword = async (req, res) => {
 const deleteAccount = async (req, res) => {
   const { userId } = req.body;
   const { idToDelete } = req.params;
-
-  console.log("id to delete in admin controller :", idToDelete);
 
   const { admin, adminError } = await adminDAO.controlAdmin(userId);
   if (!!adminError || !admin) return res.status(401).json({ message: adminError });
