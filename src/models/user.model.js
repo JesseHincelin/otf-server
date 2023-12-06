@@ -1,5 +1,5 @@
 import { createCollection, ObjectId, Schema } from "../config/mongoose.config.js";
-import { REGEX, regexIsOk } from "../utils/regex.utils.js";
+import { passwordIsValid, REGEX, regexIsOk } from "../utils/regex.utils.js";
 
 export const USER_ROLE = {
   SUPER_ADMIN: "super admin",
@@ -15,7 +15,10 @@ export const USER_THEME = {
 
 const userSchema = new Schema({
   userName: String,
-  password: String,
+  password: {
+    type: String,
+    required: [true, "Password required"],
+  },
   firstConnection: {
     type: Boolean,
     default: true,
